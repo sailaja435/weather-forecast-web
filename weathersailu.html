@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Weather App</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background-color: #f5f5f5;
+      text-align: center;
+      padding: 20px;
+      margin: 0;
+    }
+    #weather-container {
+      border: 1px solid #ccc;
+      padding: 20px;
+      max-width: 400px;
+      margin: 0 auto;
+      background-color: #fff;
+      border-radius: 10px;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    }
+    h1 {
+      color: #333;
+    }
+    label {
+      display: block;
+      margin-bottom: 10px;
+    }
+    input {
+      width: 100%;
+      padding: 8px;
+      margin-bottom: 15px;
+      box-sizing: border-box;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+    }
+    button {
+      background-color: #4caf50;
+      color: white;
+      padding: 10px 15px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    .forecast {
+      text-align: left;
+      margin-top: 20px;
+    }
+  </style>
+</head>
+<body>
+  <div id="weather-container">
+    <h1>Weather App</h1>
+    <label for="location">Enter City:</label>
+    <input type="text" id="location" placeholder="e.g., London" />
+    <button onclick="getWeather()">Get Weather</button>
+    <p id="error-message" style="color: red;"></p>
+    <p id="weather-description"></p>
+    <p id="temperature"></p>
+    <p id="humidity"></p>
+    <p id="rain-chances"></p>
+    <p id="suggestions"></p>
+    <div class="forecast" id="forecast"></div>
+  </div>
+
+  <script>
+    const apiKey = 'YOUR_API_KEY'; // Replace with your OpenWeatherMap API key
+
+    function getWeather() {
+      const location = document.getElementById('location').value;
+
+      if (!location) {
+        document.getElementById('error-message').innerText = 'Please enter a city name.';
+        return;
+      }
+
+      // Current weather
+      fetch(https://api.openweathermap.org/data/2.5/weather?q=${location}&appid=${apiKey}&units=metric)
+        .then(response => {
+          if (!response.ok) {
+            throw new Error(HTTP error! Status: ${response.status});
+          }
+          return response.json();
+        })
+        .then(data => {
+          const weatherDescription = data.weather[0].description;
+          const temperature = data.main.temp;
+          const humidity = data.main.humidity;
+          const rainChances = data.rain ? Rain: ${data.rain['1h']} mm : 'No rain';
+          const suggestions = getWeatherSuggestions(temperature);
+
+          document.getElementById('weather-description').innerText = Weather: ${weatherDescription};
+          document.getElementById('temperature').innerText = Temperature: ${temperature}°C;
+          document.getElementById('humidity').innerText = Humidity: ${humidity}%;
+          document.getElementById('rain-chances').innerText = rainChances;
+          document.getElementById('suggestions').innerText = Suggestions: ${suggestions.join(', ')};
+          document.getElementById('error-message').innerText = '';
+
+          // Get forecast
+          return fetch(https://api.openweathermap.org/data/2.5/forecast?q=${location}&appid=${apiKey}&units=metric);
+        })
+        .then(response => response.json())
+        .then(forecastData => {
+          const forecastDiv = document.getElementById('forecast');
+          forecastDiv.innerHTML = '<h3>5-Day Forecast:</h3>';
+          const forecastList = forecastData.list.filter(item => item.dt_txt.includes("12:00:00"));
+          forecastList.forEach(item => {
+            const date = new Date(item.dt_txt);
+            const temp = item.main.temp;
+            const desc = item.weather[0].description;
+            forecastDiv.innerHTML += <p><strong>${date.toDateString()}:</strong> ${temp}°C, ${desc}</p>;
+          });
+        })
+        .catch(error => {
+          console.error('Error:', error);
+          document.getElementById('error-message').innerText = Error: ${error.message};
+        });
+    }
+
+    function getWeatherSuggestions(temp) {
+      if (temp < 10) {
+        return ['Wear a heavy jacket', 'Bring an umbrella'];
+      } else if (temp < 20) {
+        return ['Bring a light jacket', 'Consider an umbrella'];
+      } else {
+        return ['Enjoy the weather', 'Sunscreen might be a good idea'];
+      }
+    }
+  </script>
+</body>
+</html>
